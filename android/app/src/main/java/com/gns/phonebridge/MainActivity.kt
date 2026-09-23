@@ -7,6 +7,7 @@ import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.os.Environment
+import android.os.PowerManager
 import android.provider.Settings
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -75,6 +76,8 @@ class MainActivity : ComponentActivity() {
                     onStop = { stopServer() },
                     onRequestFileAccess = { requestAllFilesAccess() },
                     hasFileAccess = hasAllFilesAccess(),
+                    onRequestBatteryExemption = { requestBatteryExemption() },
+                    hasBatteryExemption = hasBatteryExemption(),
                 )
             }
         }
@@ -90,6 +93,18 @@ class MainActivity : ComponentActivity() {
             }
             startActivity(intent)
         }
+    }
+
+    private fun hasBatteryExemption(): Boolean {
+        val powerManager = getSystemService(PowerManager::class.java) ?: return true
+        return powerManager.isIgnoringBatteryOptimizations(packageName)
+    }
+
+    private fun requestBatteryExemption() {
+        val intent = Intent(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS).apply {
+            data = Uri.parse("package:$packageName")
+        }
+        startActivity(intent)
     }
 
     private fun startPairingFlow() {
@@ -172,6 +187,8 @@ fun BridgeScreen(
     onStop: () -> Unit,
     onRequestFileAccess: () -> Unit,
     hasFileAccess: Boolean,
+    onRequestBatteryExemption: () -> Unit,
+    hasBatteryExemption: Boolean,
 ) {
     val state by FtpServerService.state.collectAsStateWithLifecycle()
 
@@ -195,6 +212,18 @@ fun BridgeScreen(
                 OutlinedButton(onClick = onRequestFileAccess) {
                     Text("Permitir acceso a todos los archivos")
                 }
+                Spacer(Modifier.height(16.dp))
+            }
+
+            if (!hasBatteryExemption) {
+                OutlinedButton(onClick = onRequestBatteryExemption) {
+                    Text("No cerrar el servidor en segundo plano")
+                }
+                Text(
+                    "Para que la conexión no se corte al cerrar la app",
+                    fontSize = 12.sp,
+                    textAlign = TextAlign.Center,
+                )
                 Spacer(Modifier.height(16.dp))
             }
 

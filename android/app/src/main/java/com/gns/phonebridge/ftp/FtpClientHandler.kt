@@ -34,7 +34,7 @@ class FtpClientHandler(
 
     override fun run() {
         try {
-            control.soTimeout = 5 * 60 * 1000
+            control.soTimeout = 0 // no idle timeout - Explorer can sit open for as long as the user wants
             reader = BufferedReader(InputStreamReader(control.getInputStream(), Charsets.UTF_8))
             writer = OutputStreamWriter(control.getOutputStream(), Charsets.UTF_8)
             reply(220, "Conet FR FTP ready")

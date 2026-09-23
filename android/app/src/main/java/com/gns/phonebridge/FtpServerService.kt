@@ -40,7 +40,13 @@ class FtpServerService : Service() {
             }
             else -> startServerInternal()
         }
-        return START_NOT_STICKY
+        return START_STICKY
+    }
+
+    override fun onTaskRemoved(rootIntent: Intent?) {
+        // Keep serving files even if the user swipes the app away from Recents -
+        // only the "Detener" notification action or the in-app button should stop it.
+        super.onTaskRemoved(rootIntent)
     }
 
     private fun startServerInternal() {
