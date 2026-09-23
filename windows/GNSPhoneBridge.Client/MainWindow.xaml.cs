@@ -1,4 +1,3 @@
-using System.Diagnostics;
 using System.IO;
 using System.Windows;
 using GNSPhoneBridge.Client.Services;
@@ -77,18 +76,11 @@ public partial class MainWindow : Window
 
     private void OpenInExplorer(string ftpUrl)
     {
-        try
-        {
-            // Launch explorer.exe directly with the ftp:// URL as its argument - if we instead
-            // ShellExecute the URL itself, Windows resolves it through the "ftp" protocol handler,
-            // which on many PCs is the default web browser instead of File Explorer.
-            Process.Start(new ProcessStartInfo("explorer.exe", ftpUrl) { UseShellExecute = true });
-        }
-        catch (Exception ex)
-        {
-            MessageBox.Show(this, $"No se pudo abrir el Explorador: {ex.Message}", "Error",
-                MessageBoxButton.OK, MessageBoxImage.Warning);
-        }
+        // Launch explorer.exe directly with the ftp:// URL as its argument - if we instead
+        // ShellExecute the URL itself, Windows resolves it through the "ftp" protocol handler
+        // (now Conet FR itself, once picked in Settings), which only knows how to handle
+        // individual files, not the folder root.
+        FileOpenHandler.OpenInExplorer(ftpUrl);
     }
 
     private void CreateDocumentsShortcut(string ftpUrl)

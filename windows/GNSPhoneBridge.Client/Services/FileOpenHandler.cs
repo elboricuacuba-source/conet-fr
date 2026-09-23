@@ -17,6 +17,38 @@ public static class FileOpenHandler
     public static bool CanHandle(string[] args) =>
         args.Length > 0 && args[0].StartsWith("ftp://", StringComparison.OrdinalIgnoreCase);
 
+    /// <summary>
+    /// Now that we're a registered ftp handler, Windows can hand us the whole
+    /// folder URL too (not just individual files) - e.g. when something asks
+    /// to open the root itself. We only know how to download files, so any
+    /// directory-shaped request should just be forwarded to Explorer instead.
+    /// </summary>
+    public static bool IsDirectoryRequest(string[] args)
+    {
+        if (!CanHandle(args)) return false;
+        try
+        {
+            var path = new Uri(args[0]).AbsolutePath;
+            return string.IsNullOrEmpty(path) || path.EndsWith("/");
+        }
+        catch
+        {
+            return false;
+        }
+    }
+
+    public static void OpenInExplorer(string ftpUrl)
+    {
+        try
+        {
+            Process.Start(new ProcessStartInfo("explorer.exe", ftpUrl) { UseShellExecute = true });
+        }
+        catch
+        {
+            // Nothing sensible to do here - there's no window to report this in.
+        }
+    }
+
     public static async Task HandleAsync(string[] args)
     {
         try
