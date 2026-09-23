@@ -11,7 +11,7 @@ public partial class MainWindow : Window
 
     private readonly PairingService _pairing = new();
     private CancellationTokenSource? _pairingCts;
-    private string? _lastFtpUrl;
+    private string? _lastHttpUrl;
 
     public MainWindow()
     {
@@ -62,64 +62,50 @@ public partial class MainWindow : Window
 
         if (phone == null || token.IsCancellationRequested) return;
 
-        var ftpUrl = $"ftp://{Uri.EscapeDataString(phone.Username)}:{Uri.EscapeDataString(phone.Password)}" +
-                     $"@{phone.Host}:{phone.Port}/";
-        _lastFtpUrl = ftpUrl;
+        var httpUrl = $"http://{phone.Host}:{phone.HttpPort}/";
+        _lastHttpUrl = httpUrl;
 
         ScanPanel.Visibility = Visibility.Collapsed;
         BrowsePanel.Visibility = Visibility.Visible;
         ConnectedText.Text = $"Conectado a {phone.Host}";
         StatusText.Text = $"  —  Conectado a {phone.Host}";
 
-        OpenInExplorer(ftpUrl);
-        CreateDocumentsShortcut(ftpUrl);
+        OpenInBrowser(httpUrl);
+        CreateDocumentsShortcut(httpUrl);
     }
 
-    private void OpenInExplorer(string ftpUrl)
+    private void OpenInBrowser(string httpUrl)
     {
         try
         {
-            // Launch explorer.exe directly with the ftp:// URL as its argument - if we instead
-            // ShellExecute the URL itself, Windows resolves it through the "ftp" protocol handler,
-            // which on many PCs is the default web browser instead of File Explorer.
-            Process.Start(new ProcessStartInfo("explorer.exe", ftpUrl) { UseShellExecute = true });
+            // http:// is handled natively by whatever the default browser is - no special
+            // handling needed here, unlike ftp:// which has quirks with per-file opens.
+            Process.Start(new ProcessStartInfo(httpUrl) { UseShellExecute = true });
         }
         catch (Exception ex)
         {
-            MessageBox.Show(this, $"No se pudo abrir el Explorador: {ex.Message}", "Error",
+            MessageBox.Show(this, $"No se pudo abrir el navegador: {ex.Message}", "Error",
                 MessageBoxButton.OK, MessageBoxImage.Warning);
         }
     }
 
-    private void CreateDocumentsShortcut(string ftpUrl)
+    private void CreateDocumentsShortcut(string httpUrl)
     {
         try
         {
             var documents = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
-            var path = Path.Combine(documents, "Mi telefono (Conet FR).lnk");
-            var explorerPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Windows), "explorer.exe");
-
-            // A plain .url internet shortcut opens through the OS's default "ftp" protocol handler,
-            // which on many PCs is the web browser, not File Explorer. A .lnk that targets
-            // explorer.exe directly (with the ftp URL as its argument) always opens Explorer.
-            var shellType = Type.GetTypeFromProgID("WScript.Shell");
-            if (shellType == null) return;
-            dynamic shell = Activator.CreateInstance(shellType)!;
-            dynamic shortcut = shell.CreateShortcut(path);
-            shortcut.TargetPath = explorerPath;
-            shortcut.Arguments = ftpUrl;
-            shortcut.Description = "Abrir los archivos del teléfono (Conet FR)";
-            shortcut.Save();
+            var path = Path.Combine(documents, "Mi telefono (Conet FR).url");
+            File.WriteAllText(path, $"[InternetShortcut]\r\nURL={httpUrl}\r\n");
         }
         catch
         {
-            // Not critical - the folder that just opened in Explorer is already usable.
+            // Not critical - the browser tab that just opened is already usable.
         }
     }
 
     private void ReopenButton_Click(object sender, RoutedEventArgs e)
     {
-        if (_lastFtpUrl != null) OpenInExplorer(_lastFtpUrl);
+        if (_lastHttpUrl != null) OpenInBrowser(_lastHttpUrl);
     }
 
     private void RescanButton_Click(object sender, RoutedEventArgs e)

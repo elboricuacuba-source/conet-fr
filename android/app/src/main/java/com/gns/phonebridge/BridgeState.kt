@@ -4,9 +4,13 @@ data class BridgeState(
     val running: Boolean = false,
     val ip: String? = null,
     val port: Int = 0,
+    val httpPort: Int = 0,
     val username: String = "",
     val password: String = "",
 ) {
     val ftpUrl: String?
         get() = ip?.let { "ftp://$username:$password@$it:$port" }
+
+    val httpUrl: String?
+        get() = ip?.let { "http://$it:$httpPort/" }
 }

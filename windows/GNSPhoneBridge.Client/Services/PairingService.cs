@@ -6,15 +6,15 @@ using System.Text;
 
 namespace GNSPhoneBridge.Client.Services;
 
-public record PhoneConnectionInfo(string Host, int Port, string Username, string Password);
+public record PhoneConnectionInfo(string Host, int Port, int HttpPort, string Username, string Password);
 
 /// <summary>
 /// Small side-channel the phone calls back on right after it scans this PC's
-/// QR code, handing over its own FTP server address so we can connect to it.
+/// QR code, handing over its own server addresses so we can connect to it.
 /// </summary>
 public class PairingService : IDisposable
 {
-    private const string Protocol = "GNSBRIDGE1";
+    private const string Protocol = "GNSBRIDGE2";
     private readonly TcpListener _listener;
 
     public int Port { get; }
@@ -78,10 +78,11 @@ public class PairingService : IDisposable
     {
         if (string.IsNullOrWhiteSpace(line)) return null;
         var parts = line.Trim().Split('|');
-        if (parts.Length != 6 || parts[0] != Protocol) return null;
+        if (parts.Length != 7 || parts[0] != Protocol) return null;
         if (parts[1] != Token) return null;
         if (!int.TryParse(parts[3], out var port)) return null;
-        return new PhoneConnectionInfo(parts[2], port, parts[4], parts[5]);
+        if (!int.TryParse(parts[4], out var httpPort)) return null;
+        return new PhoneConnectionInfo(parts[2], port, httpPort, parts[5], parts[6]);
     }
 
     public void Dispose()
