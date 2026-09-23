@@ -1,5 +1,5 @@
 using System.Windows;
-using GNSPhoneBridge.Client.Services;
+using System.Windows.Threading;
 
 namespace GNSPhoneBridge.Client;
 
@@ -21,33 +21,5 @@ public partial class App : Application
             MessageBox.Show(args.ExceptionObject.ToString(), "Conet FR - Error fatal",
                 MessageBoxButton.OK, MessageBoxImage.Error);
         };
-
-        ProtocolRegistration.EnsureRegistered();
-
-        if (FileOpenHandler.CanHandle(e.Args))
-        {
-            if (FileOpenHandler.IsDirectoryRequest(e.Args))
-            {
-                // Windows can also route a plain folder open through us now that we're a
-                // registered ftp handler - we only know how to download files, so hand
-                // folder requests straight to Explorer instead.
-                FileOpenHandler.OpenInExplorer(e.Args[0]);
-                Shutdown();
-                return;
-            }
-
-            // Launched by Explorer resolving a double-clicked file's ftp:// link to us -
-            // download it and open it with the right native app, no window at all.
-            _ = RunFileOpenAndShutdown(e.Args);
-            return;
-        }
-
-        new MainWindow().Show();
-    }
-
-    private async Task RunFileOpenAndShutdown(string[] args)
-    {
-        await FileOpenHandler.HandleAsync(args);
-        Shutdown();
     }
 }

@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using System.IO;
 using System.Windows;
 using GNSPhoneBridge.Client.Services;
@@ -76,11 +77,18 @@ public partial class MainWindow : Window
 
     private void OpenInExplorer(string ftpUrl)
     {
-        // Launch explorer.exe directly with the ftp:// URL as its argument - if we instead
-        // ShellExecute the URL itself, Windows resolves it through the "ftp" protocol handler
-        // (now Conet FR itself, once picked in Settings), which only knows how to handle
-        // individual files, not the folder root.
-        FileOpenHandler.OpenInExplorer(ftpUrl);
+        try
+        {
+            // Launch explorer.exe directly with the ftp:// URL as its argument - if we instead
+            // ShellExecute the URL itself, Windows resolves it through the "ftp" protocol handler,
+            // which on many PCs is the default web browser instead of File Explorer.
+            Process.Start(new ProcessStartInfo("explorer.exe", ftpUrl) { UseShellExecute = true });
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show(this, $"No se pudo abrir el Explorador: {ex.Message}", "Error",
+                MessageBoxButton.OK, MessageBoxImage.Warning);
+        }
     }
 
     private void CreateDocumentsShortcut(string ftpUrl)
@@ -118,15 +126,6 @@ public partial class MainWindow : Window
     {
         _pairingCts?.Cancel();
         ShowQrAndWaitForPhone();
-    }
-
-    private void FixAssociationButton_Click(object sender, RoutedEventArgs e)
-    {
-        ProtocolRegistration.OpenDefaultAppsSettings();
-        MessageBox.Show(this,
-            "En la página que se abrió, busca \"FTP\" (o \"Elegir aplicaciones predeterminadas por protocolo\") " +
-            "y selecciona Conet FR. Después de eso, las fotos y música se abrirán bien con doble clic.",
-            "Conet FR", MessageBoxButton.OK, MessageBoxImage.Information);
     }
 
     private void Cleanup()
