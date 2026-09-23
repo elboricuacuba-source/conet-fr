@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">Conet FR</string>
+    <string name="notif_channel_name">Servidor FTP</string>
+    <string name="notif_running">Servidor FTP activo</string>
+</resources>
