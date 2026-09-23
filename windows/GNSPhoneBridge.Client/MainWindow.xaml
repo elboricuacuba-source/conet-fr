@@ -45,19 +45,35 @@
 
         <!-- Connected view -->
         <Grid x:Name="BrowsePanel" Grid.Row="1" Visibility="Collapsed">
-            <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" MaxWidth="480">
-                <TextBlock Text="✅" FontSize="48" HorizontalAlignment="Center" />
-                <TextBlock x:Name="ConnectedText" Text="Conectado"
-                           Foreground="White" FontSize="18" FontWeight="Bold" Margin="0,12,0,0"
-                           HorizontalAlignment="Center" TextAlignment="Center" TextWrapping="Wrap" />
-                <TextBlock Text="Se abrió la carpeta de tu teléfono en el Explorador de Windows. También queda un acceso directo en Documentos para volver a entrar sin escanear otra vez."
-                           Foreground="#9FB3C8" FontSize="13" Margin="0,8,0,20"
-                           HorizontalAlignment="Center" TextAlignment="Center" TextWrapping="Wrap" />
-                <Button x:Name="ReopenButton" Content="Abrir carpeta de nuevo" Padding="10,6"
-                        Margin="0,0,0,8" Click="ReopenButton_Click" HorizontalAlignment="Center" />
-                <Button x:Name="RescanButton" Content="Emparejar otro teléfono" Padding="10,6"
-                        Click="RescanButton_Click" HorizontalAlignment="Center" />
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+
+            <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,8">
+                <Button x:Name="BackButton" Content="⬅ Atrás" Padding="10,4" Click="BackButton_Click" />
+                <TextBlock x:Name="PathText" Text="/" Foreground="White" FontSize="14"
+                           VerticalAlignment="Center" Margin="12,0,0,0" />
+                <Button x:Name="ReopenButton" Content="Abrir en el Explorador" Padding="10,4"
+                        Margin="16,0,0,0" Click="ReopenButton_Click" />
+                <Button x:Name="RescanButton" Content="Emparejar otro teléfono" Padding="10,4"
+                        Margin="8,0,0,0" Click="RescanButton_Click" />
             </StackPanel>
+
+            <ListView x:Name="FileList" Grid.Row="1" MouseDoubleClick="FileList_MouseDoubleClick">
+                <ListView.View>
+                    <GridView>
+                        <GridViewColumn Header="" Width="30" DisplayMemberBinding="{Binding Icon}" />
+                        <GridViewColumn Header="Nombre" Width="420" DisplayMemberBinding="{Binding Name}" />
+                        <GridViewColumn Header="Tamaño" Width="100" DisplayMemberBinding="{Binding SizeDisplay}" />
+                        <GridViewColumn Header="Modificado" Width="160" DisplayMemberBinding="{Binding Modified}" />
+                    </GridView>
+                </ListView.View>
+            </ListView>
+
+            <TextBlock Grid.Row="2" Text="Doble clic en una carpeta para entrar, o en un archivo para abrirlo. &quot;Abrir en el Explorador&quot; sirve para arrastrar y soltar varios archivos a la vez."
+                       Foreground="#9FB3C8" FontSize="12" Margin="0,8,0,0" TextWrapping="Wrap" />
         </Grid>
     </Grid>
 </Window>
