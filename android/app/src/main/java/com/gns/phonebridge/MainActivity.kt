@@ -164,7 +164,7 @@ class MainActivity : ComponentActivity() {
         lifecycleScope.launch {
             val ok = withContext(Dispatchers.IO) {
                 runCatching {
-                    PairingClient.sendPairing(pc, state.ip, state.port, state.httpPort, state.username, state.password)
+                    PairingClient.sendPairing(pc, state.ip, state.port, state.username, state.password)
                 }.getOrDefault(false)
             }
             isPairing = false

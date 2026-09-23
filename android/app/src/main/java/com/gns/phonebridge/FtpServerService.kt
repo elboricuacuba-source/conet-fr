@@ -9,7 +9,6 @@ import android.os.Environment
 import android.os.IBinder
 import androidx.core.app.NotificationCompat
 import com.gns.phonebridge.ftp.MiniFtpServer
-import com.gns.phonebridge.http.MiniHttpServer
 import com.gns.phonebridge.util.Credentials
 import com.gns.phonebridge.util.NetworkUtils
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -22,7 +21,6 @@ class FtpServerService : Service() {
         const val ACTION_START = "com.gns.phonebridge.START"
         const val ACTION_STOP = "com.gns.phonebridge.STOP"
         const val PORT = 2121
-        const val HTTP_PORT = 8080
         const val USERNAME = "gns"
         private const val NOTIF_ID = 1
 
@@ -31,7 +29,6 @@ class FtpServerService : Service() {
     }
 
     private var server: MiniFtpServer? = null
-    private var httpServer: MiniHttpServer? = null
 
     override fun onBind(intent: Intent?): IBinder? = null
 
@@ -74,15 +71,10 @@ class FtpServerService : Service() {
         server = instance
         instance.start()
 
-        val httpInstance = MiniHttpServer(rootDir = root, port = HTTP_PORT)
-        httpServer = httpInstance
-        httpInstance.start()
-
         _state.value = BridgeState(
             running = true,
             ip = ip,
             port = PORT,
-            httpPort = HTTP_PORT,
             username = USERNAME,
             password = password,
         )
@@ -91,8 +83,6 @@ class FtpServerService : Service() {
     private fun stopServerInternal() {
         server?.stop()
         server = null
-        httpServer?.stop()
-        httpServer = null
         _state.value = BridgeState(running = false)
     }
 

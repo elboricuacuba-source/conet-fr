@@ -9,11 +9,11 @@ import java.net.Socket
  * own FTP server details once it has scanned it.
  */
 object PairingClient {
-    private const val PROTOCOL = "GNSBRIDGE2"
+    private const val PROTOCOL = "GNSBRIDGE1"
 
     data class PcInfo(val ip: String, val port: Int, val token: String)
 
-    /** Parses the text encoded in the PC's QR code: GNSBRIDGE2|ip|port|token */
+    /** Parses the text encoded in the PC's QR code: GNSBRIDGE1|ip|port|token */
     fun parsePcQr(text: String): PcInfo? {
         val parts = text.trim().split("|")
         if (parts.size != 4 || parts[0] != PROTOCOL) return null
@@ -22,19 +22,12 @@ object PairingClient {
         return PcInfo(ip = parts[1], port = port, token = parts[3])
     }
 
-    /** Connects to the PC and hands over our server addresses. Returns true if the PC acknowledged it. */
-    fun sendPairing(
-        pc: PcInfo,
-        androidIp: String,
-        ftpPort: Int,
-        httpPort: Int,
-        username: String,
-        password: String,
-    ): Boolean {
+    /** Connects to the PC and hands over our FTP address. Returns true if the PC acknowledged it. */
+    fun sendPairing(pc: PcInfo, androidIp: String, ftpPort: Int, username: String, password: String): Boolean {
         Socket().use { socket ->
             socket.connect(InetSocketAddress(pc.ip, pc.port), 5000)
             socket.soTimeout = 5000
-            val message = "$PROTOCOL|${pc.token}|$androidIp|$ftpPort|$httpPort|$username|$password\n"
+            val message = "$PROTOCOL|${pc.token}|$androidIp|$ftpPort|$username|$password\n"
             socket.getOutputStream().write(message.toByteArray(Charsets.UTF_8))
             socket.getOutputStream().flush()
             val response = socket.getInputStream().bufferedReader().readLine()
