@@ -1,5 +1,5 @@
 using System.Windows;
-using System.Windows.Threading;
+using GNSPhoneBridge.Client.Services;
 
 namespace GNSPhoneBridge.Client;
 
@@ -21,5 +21,23 @@ public partial class App : Application
             MessageBox.Show(args.ExceptionObject.ToString(), "Conet FR - Error fatal",
                 MessageBoxButton.OK, MessageBoxImage.Error);
         };
+
+        ProtocolRegistration.EnsureRegistered();
+
+        if (FileOpenHandler.CanHandle(e.Args))
+        {
+            // Launched by Explorer resolving a double-clicked file's ftp:// link to us -
+            // download it and open it with the right native app, no window at all.
+            _ = RunFileOpenAndShutdown(e.Args);
+            return;
+        }
+
+        new MainWindow().Show();
+    }
+
+    private async Task RunFileOpenAndShutdown(string[] args)
+    {
+        await FileOpenHandler.HandleAsync(args);
+        Shutdown();
     }
 }
