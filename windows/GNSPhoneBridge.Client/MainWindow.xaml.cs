@@ -7,6 +7,8 @@ namespace GNSPhoneBridge.Client;
 
 public partial class MainWindow : Window
 {
+    private const string AppDownloadUrl = "https://github.com/elboricuacuba-source/conet-fr/releases/latest/download/ConetFR.apk";
+
     private readonly PairingService _pairing = new();
     private CancellationTokenSource? _pairingCts;
     private string? _lastFtpUrl;
@@ -14,6 +16,8 @@ public partial class MainWindow : Window
     public MainWindow()
     {
         InitializeComponent();
+
+        DownloadQrImage.Source = QrImageGenerator.Generate(AppDownloadUrl, size: 150);
 
         Loaded += (_, _) => ShowQrAndWaitForPhone();
         Closed += (_, _) => Cleanup();
