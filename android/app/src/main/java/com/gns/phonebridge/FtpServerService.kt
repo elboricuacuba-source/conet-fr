@@ -4,6 +4,7 @@ import android.app.Notification
 import android.app.PendingIntent
 import android.app.Service
 import android.content.Intent
+import android.media.MediaScannerConnection
 import android.os.Build
 import android.os.Environment
 import android.os.IBinder
@@ -70,6 +71,7 @@ class FtpServerService : Service() {
             port = PORT,
             username = USERNAME,
             password = password,
+            onFileChanged = { path -> MediaScannerConnection.scanFile(applicationContext, arrayOf(path), null, null) },
         )
         server = instance
         instance.start()

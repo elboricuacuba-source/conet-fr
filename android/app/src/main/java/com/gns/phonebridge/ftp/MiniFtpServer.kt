@@ -16,6 +16,7 @@ class MiniFtpServer(
     private val username: String,
     private val password: String,
     private val onLog: (String) -> Unit = {},
+    private val onFileChanged: (String) -> Unit = {},
 ) {
     private var serverSocket: ServerSocket? = null
     @Volatile private var running = false
@@ -33,7 +34,7 @@ class MiniFtpServer(
             while (running) {
                 try {
                     val client = socket.accept()
-                    val handler = FtpClientHandler(client, rootDir, username, password, onLog)
+                    val handler = FtpClientHandler(client, rootDir, username, password, onLog, onFileChanged)
                     activeHandlers.add(handler)
                     Thread(handler, "ftp-client-${client.inetAddress.hostAddress}").start()
                 } catch (e: Exception) {

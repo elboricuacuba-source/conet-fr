@@ -16,6 +16,7 @@ class FtpClientHandler(
     private val username: String,
     private val password: String,
     private val onLog: (String) -> Unit,
+    private val onFileChanged: (String) -> Unit = {},
 ) : Runnable {
 
     private lateinit var reader: BufferedReader
@@ -213,6 +214,7 @@ class FtpClientHandler(
                 }
             }
             reply(226, "Transfer complete")
+            onFileChanged(file.absolutePath)
         } catch (e: Exception) {
             reply(451, "Transfer failed: ${e.message}")
         } finally {
@@ -222,7 +224,10 @@ class FtpClientHandler(
 
     private fun deleteFile(arg: String) {
         val f = resolvePath(arg)
-        if (f != null && f.isFile && f.delete()) reply(250, "Deleted") else reply(550, "Delete failed")
+        if (f != null && f.isFile && f.delete()) {
+            reply(250, "Deleted")
+            onFileChanged(f.absolutePath)
+        } else reply(550, "Delete failed")
     }
 
     private fun makeDirectory(arg: String) {
